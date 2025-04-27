@@ -1,0 +1,53 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import ExpenseForm from './components/ExpenseForm';
+import ExpenseList from './components/ExpenseList';
+import ExpenseChart from './components/ExpenseChart';
+
+function App() {
+  const [expenses, setExpenses] = useState([]);
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    const res = await axios.get('http://localhost:5000/expenses');
+    setExpenses(res.data);
+  };
+
+  const addExpense = async (expense) => {
+    await axios.post('http://localhost:5000/expenses', expense);
+    fetchExpenses();
+  };
+
+  const updateExpense = async (id, updatedExpense) => {
+    await axios.put(`http://localhost:5000/expenses/${id}`, updatedExpense);
+    fetchExpenses();
+    setEditingExpense(null);
+  };
+
+  const deleteExpense = async (id) => {
+    await axios.delete(`http://localhost:5000/expenses/${id}`);
+    fetchExpenses();
+  };
+
+  return (
+    <div className="App">
+      <h1>Expense Tracker</h1>
+      <ExpenseForm 
+        onSubmit={editingExpense ? updateExpense : addExpense} 
+        editingExpense={editingExpense} 
+      />
+      <ExpenseList 
+        expenses={expenses} 
+        onDelete={deleteExpense} 
+        onEdit={setEditingExpense}
+      />
+      <ExpenseChart expenses={expenses} />
+    </div>
+  );
+}
+
+export default App;
